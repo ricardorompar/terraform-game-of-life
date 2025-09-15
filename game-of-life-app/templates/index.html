@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Conway's Game of Life</title>
+  <style>
+    body { font-family: sans-serif; background-color: black;}
+    #controls { margin-bottom: 10px; }
+    #board { border: 1px solid #333; }
+  </style>
+</head>
+<body>
+  <div id="controls">
+    <label style="color:white">Zoom: <input type="range" id="zoom" min="5" max="40" value="20"></label>
+    <label style="color:white">Step Duration (ms): <input type="number" id="duration" value="300"></label>
+    <button id="restart" style="color:black;background:white">Restart</button>
+    <button id="start" style="color:black;background:white">Start</button>
+    <span id="hint" style="color:white">Click cells to set initial alive cells before starting.</span>
+  </div>
+  <canvas id="board" width="400" height="400" style="background:black"></canvas>
+  <script>
+    let board = [];
+    let running = false;
+    let zoom = 20;
+    let duration = 300;
+    let timer;
+    const size = 20;
+    function initBoard() {
+      board = Array(size).fill().map(()=>Array(size).fill(0));
+    }
+    function draw() {
+      const ctx = document.getElementById('board').getContext('2d');
+      ctx.clearRect(0,0,400,400);
+      for(let i=0;i<size;i++) for(let j=0;j<size;j++) {
+        ctx.strokeStyle = 'white';
+        ctx.lineWidth = 1;
+        ctx.strokeRect(j*zoom,i*zoom,zoom,zoom);
+        if(board[i][j]) {
+          ctx.fillStyle = 'white';
+          ctx.fillRect(j*zoom,i*zoom,zoom,zoom);
+        }
+      }
+    }
+    document.getElementById('board').onclick = function(e) {
+      if(running) return;
+      const rect = this.getBoundingClientRect();
+      const x = Math.floor((e.clientY-rect.top)/zoom);
+      const y = Math.floor((e.clientX-rect.left)/zoom);
+      if(board[x] && board[x][y]!==undefined) {
+        board[x][y] = board[x][y] ? 0 : 1;
+        draw();
+      }
+    };
+    async function step() {
+      const res = await fetch('/step', {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({board})
+      });
+      board = (await res.json()).board;
+      draw();
+    }
+    document.getElementById('start').onclick = () => {
+      running = true;
+      draw();
+      clearInterval(timer);
+      timer = setInterval(()=>{ if(running) step(); }, duration);
+    };
+    document.getElementById('restart').onclick = () => {
+      running = false;
+      clearInterval(timer);
+      initBoard();
+      draw();
+    };
+    document.getElementById('zoom').oninput = e => {
+      zoom = +e.target.value;
+      draw();
+    };
+    document.getElementById('duration').oninput = e => {
+      duration = +e.target.value;
+      if(running) {
+        clearInterval(timer);
+        timer = setInterval(()=>{ if(running) step(); }, duration);
+      }
+    };
+    initBoard();
+    draw();
+  </script>
+</body>
+</html>
