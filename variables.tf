@@ -1,7 +1,7 @@
 variable "prefix" {
   description = "Prefix for resource names"
   type        = string
-  default     = "hashidemo"
+  default     = "hashicardo"
 }
 
 variable "instance_type" {
