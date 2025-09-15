@@ -6,6 +6,6 @@ chmod +x /usr/local/bin/docker-compose
 usermod -aG docker ubuntu
 cd /home/ubuntu
 # Clone the app repo (assume repo will be created as 'game-of-life-app')
-git clone https://github.com/ricardoromeroparedes/game-of-life-app.git || true
-cd game-of-life-app
+git clone https://github.com/ricardorompar/terraform-game-of-life.git || true
+cd terraform-game-of-life
 /usr/local/bin/docker-compose up -d

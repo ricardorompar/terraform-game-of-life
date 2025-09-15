@@ -13,8 +13,9 @@ resource "aws_instance" "web" {
   subnet_id     = aws_subnet.public.id
   vpc_security_group_ids = [aws_security_group.web_sg.id]
   associate_public_ip_address = true
+  key_name      = aws_key_pair.ec2_key.key_name
   tags = {
-    Name = "${var.prefix}-web"
+      Name = "${var.prefix}-web"
   }
   user_data = file("${path.module}/boot.sh")
 }
